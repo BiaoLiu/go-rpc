@@ -9,12 +9,12 @@ import (
 	//proto "github.com/micro/examples/service/proto"
 	"github.com/micro/go-micro"
 	"context"
-	"go-rpc/proto/greeter"
+	proto "go-rpc/proto/greeter"
 )
 
 type Greeter struct{}
 
-func (g *Greeter) Hello(ctx context.Context, req *greeter.HelloRequest, rsp *greeter.HelloResponse) error {
+func (g *Greeter) Hello(ctx context.Context, req *proto.HelloRequest, rsp *proto.HelloResponse) error {
 	rsp.Greeting = "Hello " + req.Name
 	return nil
 }
@@ -48,10 +48,25 @@ func main() {
 	// Setup the server
 
 	// Register handler
-	greeter.RegisterGreeterHandler(service.Server(), new(Greeter))
+	proto.RegisterGreeterHandler(service.Server(), new(Greeter))
 
 	// Run the server
 	if err := service.Run(); err != nil {
 		fmt.Println(err)
 	}
+}
+
+func runClient(service micro.Service) {
+	// Create new greeter client
+	greeter := proto.NewGreeterService("greeter", service.Client())
+
+	// Call the greeter
+	rsp, err := greeter.Hello(context.TODO(), &proto.HelloRequest{Name: "John"})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Print response
+	fmt.Println(rsp.Greeting)
 }
