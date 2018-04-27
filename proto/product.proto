@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+service ScmProduct{
+    rpc GetProduct(Supplier) returns (Product){}
+    rpc GetAllProduct(Supplier) returns (Product){}
+}
+
+message Supplier {
+    string supplier_id = 1;
+}
+
+message Product {
+    string product_id = 1;
+    string product_name = 2;
+}
