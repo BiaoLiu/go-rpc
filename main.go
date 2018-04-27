@@ -5,17 +5,21 @@ import (
 	"os"
 
 	"github.com/micro/cli"
-	proto "github.com/micro/examples/service/proto"
+
+	//proto "github.com/micro/examples/service/proto"
 	"github.com/micro/go-micro"
 	"context"
+	"go-rpc/proto/greeter"
 )
 
 type Greeter struct{}
 
-func (g *Greeter) Hello(ctx context.Context, req *proto.HelloRequest, rsp *proto.HelloResponse) error {
+func (g *Greeter) Hello(ctx context.Context, req *greeter.HelloRequest, rsp *greeter.HelloResponse) error {
 	rsp.Greeting = "Hello " + req.Name
 	return nil
 }
+
+
 
 func main() {
 	// Create a new service. Optionally include some options here.
@@ -46,7 +50,7 @@ func main() {
 	// Setup the server
 
 	// Register handler
-	proto.RegisterGreeterHandler(service.Server(), new(Greeter))
+	greeter.RegisterGreeterHandler(service.Server(), new(Greeter))
 
 	// Run the server
 	if err := service.Run(); err != nil {
