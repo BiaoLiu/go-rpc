@@ -19,8 +19,6 @@ func (g *Greeter) Hello(ctx context.Context, req *greeter.HelloRequest, rsp *gre
 	return nil
 }
 
-
-
 func main() {
 	// Create a new service. Optionally include some options here.
 	service := micro.NewService(

@@ -8,7 +8,7 @@ import (
 
     "golang.org/x/net/context"
     "google.golang.org/grpc"
-    pb "go-rpc/helloworld"
+    pb "go-rpc/proto/helloworld"
     "google.golang.org/grpc/reflection"
 )
 
