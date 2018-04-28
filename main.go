@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/micro/cli"
-
-	//proto "github.com/micro/examples/service/proto"
-	"github.com/micro/go-micro"
 	"context"
+	"github.com/micro/cli"
 	proto "go-rpc/proto/greeter"
+	"github.com/micro/go-micro"
 )
+
+/*
+Example usage of top level service initialisation
+*/
 
 type Greeter struct{}
 
@@ -19,13 +21,38 @@ func (g *Greeter) Hello(ctx context.Context, req *proto.HelloRequest, rsp *proto
 	return nil
 }
 
+// Setup and the client
+func runClient(service micro.Service) {
+	// Create new greeter client
+	greeter := proto.NewGreeterService("greeter", service.Client())
+
+	// Call the greeter
+	rsp, err := greeter.Hello(context.TODO(), &proto.HelloRequest{Name: "John"})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Print response
+	fmt.Println(rsp.Greeting)
+}
+
 func main() {
 	// Create a new service. Optionally include some options here.
 	service := micro.NewService(
 		micro.Name("greeter"),
-		micro.Version("v1.0"),
+		micro.Version("latest"),
 		micro.Metadata(map[string]string{
 			"type": "helloworld",
+		}),
+
+		// Setup some flags. Specify --run_client to run the client
+
+		// Add runtime flags
+		// We could do this below too
+		micro.Flags(cli.BoolFlag{
+			Name:  "run_client",
+			Usage: "Launch the client",
 		}),
 	)
 
@@ -37,7 +64,7 @@ func main() {
 		// We could actually do this above
 		micro.Action(func(c *cli.Context) {
 			if c.Bool("run_client") {
-				//runClient(service)
+				runClient(service)
 				os.Exit(0)
 			}
 		}),
@@ -54,19 +81,4 @@ func main() {
 	if err := service.Run(); err != nil {
 		fmt.Println(err)
 	}
-}
-
-func runClient(service micro.Service) {
-	// Create new greeter client
-	greeter := proto.NewGreeterService("greeter", service.Client())
-
-	// Call the greeter
-	rsp, err := greeter.Hello(context.TODO(), &proto.HelloRequest{Name: "John"})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Print response
-	fmt.Println(rsp.Greeting)
 }
