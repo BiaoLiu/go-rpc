@@ -89,6 +89,12 @@ func OpentracingServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInt
 		)
 		defer serverSpan.Finish()
 		ctx = opentracing.ContextWithSpan(ctx, serverSpan)
+
+		// Set request ID for context.
+		//if sc, ok := serverSpan.Context().(jaeger.SpanContext); ok {
+		//	ctx = context.WithValue(ctx, constants.RequestID, sc.TraceID().String())
+		//}
+
 		return handler(ctx, req)
 	}
 }

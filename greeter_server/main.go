@@ -34,7 +34,7 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	}
 	time.Sleep(time.Second * 2)
 
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
+	return &pb.HelloReply{Message: "Hello " + in.Name + "reply"}, nil
 }
 
 func main() {
@@ -48,6 +48,8 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 
 	fmt.Println("jaeger init success")
+
+	fmt.Println("greeter service start...")
 
 	var serverOpts []grpc.ServerOption
 	serverOpts = append(serverOpts, grpc.UnaryInterceptor(plugins.OpentracingServerInterceptor(tracer)))

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package pb;
+
+service User {
+    rpc NewUser (NewUserRequest) returns (NewUserResponse) {
+    }
+    rpc GetUserByEmail (GetUserByEmailRequest) returns (UserResponse) {
+    }
+}
+
+message NewUserRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message NewUserResponse {
+    string id = 1;
+}
+
+message GetUserByEmailRequest {
+    string email = 1;
+}
+
+message UserResponse {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+}
