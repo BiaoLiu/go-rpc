@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/opentracing/opentracing-go"
+	greeter "go-rpc/greeter_service/proto"
+	"go-rpc/plugins"
+	"go-rpc/user-service/proto"
 	"google.golang.org/grpc"
 	"net"
-	"go-rpc/user-service/proto"
-	"go-rpc/plugins"
-	"github.com/opentracing/opentracing-go"
 )
 
 type userServie struct {
@@ -33,8 +34,8 @@ func (userServie) NewUser(ctx context.Context, req *pb.NewUserRequest) (*pb.NewU
 		fmt.Println("connect greeter service fail...")
 	}
 
-	client := pb.NewGreeterClient(conn)
-	resp, err := client.SayHello(context.Background(), &pb.HelloRequest{Name: username})
+	client := greeter.NewGreeterClient(conn)
+	resp, err := client.SayHello(context.Background(), &greeter.HelloRequest{Name: username})
 	if err != nil {
 		fmt.Println("call sayhello service fail...")
 	}
@@ -55,7 +56,7 @@ func main() {
 		fmt.Println("failed to listen")
 	}
 	srv := userServie{}
-	tracer, closer := plugins.InitJaeger("UserServer")
+	tracer, closer := plugins.InitJaeger("UserService")
 	defer closer.Close()
 	opentracing.SetGlobalTracer(tracer)
 

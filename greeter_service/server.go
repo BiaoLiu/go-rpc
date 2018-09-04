@@ -4,17 +4,17 @@ import (
 	"log"
 	"net"
 
+	"fmt"
+	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
+	"go-rpc/greeter_service/proto"
+	"go-rpc/plugins"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	pb "go-rpc/proto/helloworld"
 	"google.golang.org/grpc/reflection"
-	"time"
-	"github.com/opentracing/opentracing-go"
-	"github.com/uber/jaeger-client-go/config"
-	"fmt"
-	"github.com/uber/jaeger-client-go"
 	"io"
-	"go-rpc/plugins"
+	"time"
 )
 
 const (
@@ -43,7 +43,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	tracer, closer := initJaeger("HelloServer")
+	tracer, closer := initJaeger("GreeterService")
 	defer closer.Close()
 	opentracing.SetGlobalTracer(tracer)
 

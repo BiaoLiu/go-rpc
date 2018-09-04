@@ -1,12 +1,12 @@
 package main
 
 import (
-	"google.golang.org/grpc"
-	"go-rpc/user-service/proto"
 	"context"
-	"time"
 	"fmt"
 	"go-rpc/plugins"
+	"go-rpc/user-service/proto"
+	"google.golang.org/grpc"
+	"time"
 )
 
 func main() {

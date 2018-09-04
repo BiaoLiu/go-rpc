@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
+	"go-rpc/greeter_service/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	pb "go-rpc/proto/helloworld"
 )
 
 const (
