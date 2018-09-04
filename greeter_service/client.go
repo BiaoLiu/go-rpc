@@ -22,7 +22,7 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewGreeterClient(conn)
+	greeterService := pb.NewGreeterClient(conn)
 
 	// Contact the server and print out its response.
 	name := defaultName
@@ -31,9 +31,9 @@ func main() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
+	resp, err := greeterService.SayHello(ctx, &pb.HelloRequest{Name: name})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.Message)
+	log.Printf("Greeting: %s", resp.Message)
 }

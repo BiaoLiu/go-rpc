@@ -3,12 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 	greeter "go-rpc/greeter_service/proto"
-	"go-rpc/plugins"
 	"go-rpc/user-service/proto"
 	"google.golang.org/grpc"
+	"io"
 	"net"
+	"time"
 )
 
 type userServie struct {
@@ -26,16 +30,14 @@ func (userServie) NewUser(ctx context.Context, req *pb.NewUserRequest) (*pb.NewU
 		ctx = opentracing.ContextWithSpan(ctx, span)
 	}
 
-	dialOpts := []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}
-	dialOpts = append(dialOpts, grpc.WithUnaryInterceptor(plugins.OpenTracingClientInterceptor(opentracing.SpanFromContext(ctx).Tracer())))
-
-	conn, err := grpc.Dial("localhost:50051", dialOpts...)
+	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_opentracing.UnaryClientInterceptor()))
 	if err != nil {
 		fmt.Println("connect greeter service fail...")
 	}
+	defer conn.Close()
 
-	client := greeter.NewGreeterClient(conn)
-	resp, err := client.SayHello(context.Background(), &greeter.HelloRequest{Name: username})
+	greeteService := greeter.NewGreeterClient(conn)
+	resp, err := greeteService.SayHello(context.Background(), &greeter.HelloRequest{Name: username})
 	if err != nil {
 		fmt.Println("call sayhello service fail...")
 	}
@@ -56,20 +58,38 @@ func main() {
 		fmt.Println("failed to listen")
 	}
 	srv := userServie{}
-	tracer, closer := plugins.InitJaeger("UserService")
+	tracer, closer := initJaeger("UserService")
 	defer closer.Close()
 	opentracing.SetGlobalTracer(tracer)
 
 	fmt.Println("jaeger init success")
 
 	fmt.Println("user service start...")
-	var serverOpts []grpc.ServerOption
-	serverOpts = append(serverOpts, grpc.UnaryInterceptor(plugins.OpentracingServerInterceptor(tracer)))
 
-	server := grpc.NewServer(serverOpts...)
+	server := grpc.NewServer(grpc.UnaryInterceptor(grpc_opentracing.UnaryServerInterceptor()))
 	pb.RegisterUserServer(server, &srv)
 
 	if err := server.Serve(listener); err != nil {
 		fmt.Println("server start error...")
 	}
+}
+
+func initJaeger(service string) (opentracing.Tracer, io.Closer) {
+	cfg := config.Configuration{
+		Sampler: &config.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{
+			LogSpans:            false,
+			BufferFlushInterval: 1 * time.Second,
+			LocalAgentHostPort:  "140.143.56.14:6831",
+		},
+	}
+	tracer, closer, err := cfg.New(service, config.Logger(jaeger.StdLogger))
+	if err != nil {
+		fmt.Println("error:" + err.Error())
+	}
+	fmt.Println("tracer:", tracer)
+	return tracer, closer
 }

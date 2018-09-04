@@ -1,12 +1,12 @@
 package plugins
 
 import (
+	"fmt"
+	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 	"io"
 	"time"
-	"github.com/opentracing/opentracing-go"
-	"github.com/uber/jaeger-client-go/config"
-	"github.com/uber/jaeger-client-go"
-	"fmt"
 )
 
 func InitJaeger(service string) (opentracing.Tracer, io.Closer) {

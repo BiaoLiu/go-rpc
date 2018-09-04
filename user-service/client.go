@@ -3,21 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"go-rpc/plugins"
 	"go-rpc/user-service/proto"
 	"google.golang.org/grpc"
 	"time"
 )
 
 func main() {
-	dialOpts := []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}
-	//open tracing
-	tracer, _ := plugins.InitJaeger("NewUserClient")
-	if tracer != nil {
-		dialOpts = append(dialOpts, grpc.WithUnaryInterceptor(plugins.OpenTracingClientInterceptor(tracer)))
-	}
-
-	conn, err := grpc.Dial("localhost:50053", dialOpts...)
+	conn, err := grpc.Dial("localhost:50053",grpc.WithInsecure())
 	if err != nil {
 		//log.Fatalf("did not connect: %v", err)
 	}

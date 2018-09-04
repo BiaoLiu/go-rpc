@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"log"
 	"net"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"go-rpc/greeter_service/proto"
-	"go-rpc/plugins"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -34,7 +34,7 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	}
 	time.Sleep(time.Second * 2)
 
-	return &pb.HelloReply{Message: "Hello " + in.Name + "reply"}, nil
+	return &pb.HelloReply{Message: "Hello " + in.Name + " reply"}, nil
 }
 
 func main() {
@@ -51,14 +51,11 @@ func main() {
 
 	fmt.Println("greeter service start...")
 
-	var serverOpts []grpc.ServerOption
-	serverOpts = append(serverOpts, grpc.UnaryInterceptor(plugins.OpentracingServerInterceptor(tracer)))
-
-	s := grpc.NewServer(serverOpts...)
-	pb.RegisterGreeterServer(s, &server{})
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(grpc_opentracing.UnaryServerInterceptor()))
+	pb.RegisterGreeterServer(grpcServer, &server{})
 	// Register reflection service on gRPC server.
-	reflection.Register(s)
-	if err := s.Serve(lis); err != nil {
+	reflection.Register(grpcServer)
+	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
