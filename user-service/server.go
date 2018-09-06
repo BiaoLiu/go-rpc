@@ -9,6 +9,7 @@ import (
 	"github.com/uber/jaeger-client-go/config"
 	greeter "go-rpc/greeter_service/proto"
 	"go-rpc/user-service/proto"
+	"go.etcd.io/etcd/clientv3"
 	"google.golang.org/grpc"
 	"io"
 	"net"
@@ -53,6 +54,18 @@ func (userServie) GetUserByEmail(ctx context.Context, req *pb.GetUserByEmailRequ
 }
 
 func main() {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{"140.143.56.14:32964"},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		// handle error!
+	}
+	defer cli.Close()
+
+	resp, err := cli.Get(context.TODO(), "testkey")
+	fmt.Println(resp)
+
 	listener, err := net.Listen("tcp", ":50053")
 	if err != nil {
 		fmt.Println("failed to listen")
@@ -63,7 +76,6 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 
 	fmt.Println("jaeger init success")
-
 	fmt.Println("user service start...")
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(grpc_opentracing.UnaryServerInterceptor()))
